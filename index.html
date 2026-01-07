@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management System 2026 - Baduriya Central College</title>
+    <meta name="description" content="Offline Task Management System for Baduriya Central College Staff">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Google Fonts (Optional - will fallback if offline) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons (Phosphor Icons - using CDN for now, but script will try to load local if available) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Custom Styles for creating a 'Premium' feel -->
+    <style>
+        :root {
+            --primary: #0F172A;
+            /* Slate 900 */
+            --primary-light: #1E293B;
+            /* Slate 800 */
+            --accent: #F59E0B;
+            /* Amber 500 */
+            --accent-hover: #D97706;
+            --background: #F8FAFC;
+            /* Slate 50 */
+            --surface: #FFFFFF;
+            --text-main: #334155;
+            /* Slate 700 */
+            --text-light: #64748B;
+            /* Slate 500 */
+            --success: #10B981;
+            --danger: #EF4444;
+            --border: #E2E8F0;
+            --font-main: 'Outfit', sans-serif;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--background);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Fallback font */
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <aside id="sidebar">
+        <div class="brand">
+            <div class="logo-icon">BCC</div>
+            <div class="brand-text">
+                <h1>Task System</h1>
+                <span>2026</span>
+            </div>
+        </div>
+
+        <nav>
+            <button class="nav-item active" data-view="dashboard">
+                <i class="ph ph-squares-four"></i>
+                <span>Dashboard</span>
+            </button>
+            <button class="nav-item" data-view="staff">
+                <i class="ph ph-users"></i>
+                <span>Staff Management</span>
+            </button>
+            <button class="nav-item" data-view="tasks">
+                <i class="ph ph-check-square"></i>
+                <span>Tasks</span>
+            </button>
+            <button class="nav-item" data-view="reports">
+                <i class="ph ph-chart-pie-slice"></i>
+                <span>Reports</span>
+            </button>
+            <button class="nav-item" data-view="settings">
+                <i class="ph ph-gear"></i>
+                <span>Settings & Data</span>
+            </button>
+        </nav>
+
+        <div class="user-profile">
+            <div class="avatar">A</div>
+            <div class="info">
+                <p>Admin</p>
+                <span>Baduriya Central College</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        <!-- Header -->
+        <header>
+            <div class="header-title">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <button class="btn-icon" id="menu-toggle"><i class="ph ph-list"></i></button>
+                    <div>
+                        <h2 id="page-title">Dashboard</h2>
+                        <p id="current-date">January 06, 2026</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn-icon" title="Notifications"><i class="ph ph-bell"></i></button>
+            </div>
+        </header>
+
+        <!-- Dynamic Views -->
+        <div id="view-container" class="content-scroll">
+
+            <!-- DASHBOARD VIEW -->
+            <section id="view-dashboard" class="view active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="icon-box blue"><i class="ph ph-users-three"></i></div>
+                        <div>
+                            <h3>Total Staff</h3>
+                            <p id="stat-total-staff">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon-box orange"><i class="ph ph-list-checks"></i></div>
+                        <div>
+                            <h3>Pending Tasks</h3>
+                            <p id="stat-pending-tasks">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon-box green"><i class="ph ph-check-circle"></i></div>
+                        <div>
+                            <h3>Completed Tasks</h3>
+                            <p id="stat-completed-tasks">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-container">
+                    <div class="chart-box">
+                        <h3>Task Overview</h3>
+                        <canvas id="overviewChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STAFF VIEW -->
+            <section id="view-staff" class="view hidden">
+                <div class="toolbar">
+                    <div class="search-bar">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <input type="text" id="staff-search" placeholder="Search staff...">
+                    </div>
+                    <div class="actions">
+                        <input type="file" id="staff-upload-input" accept=".xlsx, .xls" hidden>
+                        <button class="btn secondary" id="btn-import-staff"><i class="ph ph-file-xls"></i> Bulk
+                            Upload</button>
+                        <button class="btn primary" id="btn-add-staff"><i class="ph ph-plus"></i> Add Staff</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="staff-table">
+                        <thead>
+                            <tr>
+                                <th>Staff No</th>
+                                <th>Name</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Staff Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TASKS VIEW -->
+            <section id="view-tasks" class="view hidden">
+                <div class="toolbar">
+                    <div class="search-bar">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <input type="text" id="task-search" placeholder="Search tasks...">
+                    </div>
+                    <div class="actions">
+                        <button class="btn primary" id="btn-add-task"><i class="ph ph-plus"></i> Add Task</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="task-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Staff Name</th>
+                                <th>Task Title</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Task Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- REPORTS VIEW -->
+            <section id="view-reports" class="view hidden">
+                <div class="report-controls">
+                    <div class="control-group">
+                        <label>Select Staff Member</label>
+                        <select id="report-staff-select">
+                            <option value="all">All Staff</option>
+                        </select>
+                    </div>
+                    <button class="btn primary" id="btn-generate-report"><i class="ph ph-file-pdf"></i> Generate
+                        Report</button>
+                </div>
+
+                <div class="report-preview">
+                    <h3>Report Preview</h3>
+                    <div class="table-container">
+                        <table id="report-table">
+                            <thead>
+                                <tr>
+                                    <th>Staff Name</th>
+                                    <th>Date</th>
+                                    <th>Task Name</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Report Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SETTINGS VIEW -->
+            <section id="view-settings" class="view hidden">
+                <div class="settings-card">
+                    <h3>Data Management</h3>
+                    <p>Import or export your entire database as a JSON file for backup or transfer.</p>
+                    <div class="button-row">
+                        <button class="btn secondary" id="btn-export-data"><i class="ph ph-upload-simple"></i> Export
+                            Data (JSON)</button>
+                        <button class="btn secondary" id="btn-import-data-click"><i class="ph ph-download-simple"></i>
+                            Import Data (JSON)</button>
+                        <input type="file" id="json-import-input" accept=".json" hidden>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- MODALS -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <!-- Add/Edit Staff Modal -->
+        <div id="modal-staff" class="modal hidden">
+            <div class="modal-header">
+                <h3 id="modal-staff-title">Add Staff</h3>
+                <button class="close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="staff-form">
+                    <input type="hidden" id="staff-id-hidden">
+                    <div class="form-group">
+                        <label>Staff No *</label>
+                        <input type="text" id="staff-no" required placeholder="e.g. ST-001">
+                    </div>
+                    <div class="form-group">
+                        <label>Name of Staff *</label>
+                        <input type="text" id="staff-name" required placeholder="e.g. A. B. Perera">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn secondary close-modal">Cancel</button>
+                        <button type="submit" class="btn primary">Save Staff</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add/Edit Task Modal -->
+        <div id="modal-task" class="modal hidden">
+            <div class="modal-header">
+                <h3 id="modal-task-title">Add Task</h3>
+                <button class="close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="task-form">
+                    <input type="hidden" id="task-id-hidden">
+
+                    <div class="form-group">
+                        <label>Date *</label>
+                        <input type="date" id="task-date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Staff *</label>
+                        <select id="task-staff-select" required>
+                            <option value="">Select Staff...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Task Title *</label>
+                        <input type="text" id="task-title" required placeholder="e.g. Submit Grades">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="task-desc" rows="3" placeholder="Additional details..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Due Date</label>
+                        <input type="date" id="task-due-date">
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn secondary close-modal">Cancel</button>
+                        <button type="submit" class="btn primary">Save Task</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Third Party Libs -->
+    <script src="chart.umd.js"></script>
+    <script src="jspdf.umd.min.js"></script>
+    <script src="jspdf.plugin.autotable.min.js"></script>
+    <script src="xlsx.full.min.js"></script>
+
+    <!-- Main App Logic -->
+    <script src="script.js"></script>
+</body>
+
+</html>
